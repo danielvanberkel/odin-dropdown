@@ -15,6 +15,9 @@ const Elements = (function () {
 			throw Error("Empty array passed into makeDropdown()");
 		}
 
+		// Store callback
+		const onChangeCallback = onChange;
+
 		const container = document.createElement("div"); // Create the dropdown container
 		container.classList.add(DOMClasses.DROPDOWN_CONTAINER);
 
@@ -45,7 +48,7 @@ const Elements = (function () {
 
 				const selectedText = clickedLi.textContent;
 
-				handleItemSelection(dropdownContainer, selectedText);
+				handleItemSelection(dropdownContainer, selectedText, onChangeCallback);
 			}
 		});
 
@@ -61,17 +64,26 @@ const Elements = (function () {
 		return container;
 	};
 
-	const handleItemSelection = function (container, selectedText) {
-		setCurrentSelectionText(container, selectedText);
+	const handleItemSelection = function (
+		container,
+		selectedText,
+		onChangeCallback
+	) {
+		setCurrentSelection(container, selectedText, onChangeCallback);
 		closeDropdown(container);
 	};
 
 	const getCurrentSelectionContainer = (container) =>
 		container.querySelector(`.${DOMClasses.CURRENT_SELECTION_CONTAINER}`);
 
-	const setCurrentSelectionText = function (container, text) {
+	const setCurrentSelection = function (container, text, onChangeCallback) {
 		const currentSelectionContainer = getCurrentSelectionContainer(container);
 		currentSelectionContainer.textContent = text; // Set dropdown text to list item text that was clicked
+
+		// Call the callback and pass in the selected option
+		if (onChangeCallback) {
+			onChangeCallback(text);
+		}
 	};
 
 	const openDropdown = function (container) {
@@ -96,18 +108,15 @@ const Elements = (function () {
 		dropdownItemContainer.classList.add(DOMClasses.DROPDOWN_ITEMS_HIDDEN);
 	};
 
-	const initDropdown = function () {
-		const container = document.querySelector("#container");
-		const dropdown = makeDropdown([
-			"Test 1",
-			"Test of item with a really long name!",
-			"Short item 3",
-		]);
-
-		container.append(dropdown);
-	};
-
-	return { initDropdown };
+	return { makeDropdown };
 })();
 
-Elements.initDropdown();
+const container = document.querySelector("#container");
+const dropdown = Elements.makeDropdown(
+	["Test 1", "Test of item with a really long name!", "Short item 3"],
+	(selectedValue) => {
+		console.log("User selected:", selectedValue);
+	}
+);
+
+container.append(dropdown);
